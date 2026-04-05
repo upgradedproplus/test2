@@ -484,20 +484,20 @@ n
                 const isPurchased = purchased.includes(photo.id)
                 
                 const cardHTML = `
-                <div onclick="showPhotoModal(${photo.id})" 
+                <div onclick="showPhotoModal(£{photo.id})" 
                      class="group bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 hover:border-emerald-400 transition-all cursor-pointer">
                     <div class="relative">
-                        <img src="${photo.url}" alt="${photo.title}" 
+                        <img src="£{photo.url}" alt="£{photo.title}" 
                              class="w-full aspect-video object-cover no-right-click">
                         ${isPurchased ? 
                         `<div class="absolute top-3 left-3 bg-emerald-500 text-black text-xs font-bold px-3 py-1 rounded-2xl flex items-center">✓ UNLOCKED</div>` : ''}
                         <div class="absolute top-3 right-3 bg-black/70 text-white text-xs font-mono px-2.5 py-px rounded-lg">
-                            ${photo.price}
+                            £{photo.price}
                         </div>
                     </div>
                     <div class="p-4">
-                        <h4 class="font-medium text-lg group-hover:text-emerald-400 transition-colors">${photo.title}</h4>
-                        <p class="text-sm text-zinc-400 line-clamp-2">${photo.desc}</p>
+                        <h4 class="font-medium text-lg group-hover:text-emerald-400 transition-colors">£{photo.title}</h4>
+                        <p class="text-sm text-zinc-400 line-clamp-2">£{photo.desc}</p>
                     </div>
                 </div>`
                 
@@ -517,9 +517,9 @@ n
             if (!currentPhoto) return
             
             document.getElementById('modal-title').textContent = currentPhoto.title
-            document.getElementById('modal-price').innerHTML = `$${currentPhoto.price} <span class="text-zinc-400 text-base">one-time</span>`
-            document.getElementById('modal-price-button').innerHTML = `$${currentPhoto.price}`
-            document.getElementById('modal-description').innerHTML = `<p>${currentPhoto.desc}</p><p class="text-emerald-400 mt-6 text-sm">This preview is fully protected. After purchase it will be permanently available in your Library.</p>`
+            document.getElementById('modal-price').innerHTML = `£{currentPhoto.price} <span class="text-zinc-400 text-base">one-time</span>`
+            document.getElementById('modal-price-button').innerHTML = `$£{currentPhoto.price}`
+            document.getElementById('modal-description').innerHTML = `<p>£{currentPhoto.desc}</p><p class="text-emerald-400 mt-6 text-sm">This preview is fully protected. After purchase it will be permanently available in your Library.</p>`
             
             // Render protected canvas
             renderProtectedImage(currentPhoto.url, 'modal-canvas', 'Preview Only - Buy to unlock')
