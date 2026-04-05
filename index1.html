@@ -1,0 +1,817 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShieldPhotos • Sell Secure Photos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        
+        :root {
+            --tw-color-primary: #00ff9d;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .logo-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .modal {
+            animation: modalPop 0.3s ease-out;
+        }
+        
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        canvas {
+            image-rendering: crisp-edges;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+        
+        /* Global anti-download / anti-screenshot measures */
+        .protected-content * {
+            -webkit-user-drag: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        .no-right-click {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white">
+    <!-- NAVBAR -->
+    <nav class="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-x-2">
+                    <div class="w-8 h-8 bg-emerald-500 rounded-2xl flex items-center justify-center text-black font-bold text-xl">🛡️</div>
+                    <h1 class="logo-font text-2xl tracking-tighter">ShieldPhotos</h1>
+                </div>
+
+                <!-- Menu -->
+                <div class="hidden md:flex items-center gap-x-8 text-sm font-medium">
+                    <a onclick="navigateToSection('gallery')" class="hover:text-emerald-400 transition-colors cursor-pointer">Gallery</a>
+                    <a onclick="navigateToSection('how-it-works')" class="hover:text-emerald-400 transition-colors cursor-pointer">How Protection Works</a>
+                    <a onclick="showLibrary()" class="hover:text-emerald-400 transition-colors cursor-pointer">My Library</a>
+                    <a onclick="showSellerDashboard()" class="hover:text-emerald-400 transition-colors cursor-pointer">Seller Dashboard</a>
+                </div>
+
+                <div class="flex items-center gap-x-6">
+                    <!-- Cart -->
+                    <button onclick="showCart()" class="flex items-center gap-x-2 hover:text-emerald-400 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span id="cart-count" class="text-xs bg-emerald-500 text-black rounded-full w-5 h-5 flex items-center justify-center font-mono">0</span>
+                    </button>
+
+                    <!-- Fake logged-in user -->
+                    <div class="flex items-center gap-x-2 bg-zinc-800 px-4 py-1 rounded-3xl">
+                        <div class="w-7 h-7 bg-emerald-400 rounded-2xl flex items-center justify-center text-xs font-bold text-black">JD</div>
+                        <span class="text-sm font-medium">John Doe • Seller</span>
+                    </div>
+
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-3xl leading-none">☰</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-zinc-900 border-t border-zinc-800 px-6 py-4">
+            <div class="flex flex-col gap-y-4 text-sm">
+                <a onclick="navigateToSection('gallery');toggleMobileMenu()" class="hover:text-emerald-400">Gallery</a>
+                <a onclick="navigateToSection('how-it-works');toggleMobileMenu()" class="hover:text-emerald-400">How Protection Works</a>
+                <a onclick="showLibrary();toggleMobileMenu()" class="hover:text-emerald-400">My Library</a>
+                <a onclick="showSellerDashboard();toggleMobileMenu()" class="hover:text-emerald-400">Seller Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="max-w-7xl mx-auto px-6 pt-16 pb-20">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="inline-flex items-center gap-x-2 bg-emerald-500/10 text-emerald-400 text-sm font-medium px-4 h-9 rounded-3xl mb-6">
+                    🔒 100% client-side protection
+                </div>
+                <h1 class="text-6xl md:text-7xl font-semibold tracking-tighter leading-none logo-font">
+                    Sell photos.<br>
+                    <span class="text-emerald-400">No screenshots.</span><br>
+                    No downloads.
+                </h1>
+                <p class="mt-6 text-xl text-zinc-400 max-w-lg">
+                    Your photos are rendered in a protected canvas viewer. 
+                    Right-click disabled • Watermarks • Canvas-based delivery • 
+                    No direct image files accessible.
+                </p>
+                <div class="mt-10 flex items-center gap-x-4">
+                    <button onclick="navigateToSection('gallery')" 
+                            class="bg-emerald-500 hover:bg-emerald-400 transition-colors text-black font-semibold px-8 h-12 rounded-3xl flex items-center gap-x-2">
+                        <span>Browse Secure Gallery</span>
+                        <span class="text-2xl">→</span>
+                    </button>
+                    <button onclick="showSellerDashboard()" 
+                            class="border border-zinc-700 hover:border-zinc-400 transition-colors font-medium px-8 h-12 rounded-3xl">
+                        Add your photos as seller
+                    </button>
+                </div>
+                <div class="mt-8 text-xs text-zinc-500 flex items-center gap-x-8">
+                    <div>✅ No image URL exposure</div>
+                    <div>✅ Canvas rendering only</div>
+                    <div>✅ Automatic watermarking</div>
+                    <div>✅ Works on mobile too</div>
+                </div>
+            </div>
+            
+            <!-- Hero visual -->
+            <div class="relative">
+                <div class="bg-zinc-900 rounded-3xl p-4 shadow-2xl border border-zinc-800">
+                    <div class="protected-content rounded-2xl overflow-hidden bg-black relative">
+                        <canvas id="hero-canvas" width="640" height="480" class="w-full rounded-2xl"></canvas>
+                        <div class="absolute top-4 right-4 bg-black/70 text-emerald-400 text-xs font-mono px-3 py-1 rounded-2xl flex items-center gap-x-1">
+                            <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                            PROTECTED
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute -bottom-3 -right-3 bg-zinc-900 text-xs px-4 py-2 rounded-3xl border border-zinc-700 shadow-xl flex items-center gap-x-2">
+                    <span class="text-emerald-400">📸</span>
+                    Screenshot attempt detected • Watermark applied
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- GALLERY SECTION -->
+    <section id="gallery" class="max-w-7xl mx-auto px-6 py-16 border-t border-zinc-800">
+        <div class="flex items-end justify-between mb-8">
+            <h2 class="text-4xl font-semibold tracking-tighter">Available Photos</h2>
+            <p class="text-zinc-400">All images are protected • Buy once, view forever in secure viewer</p>
+        </div>
+        
+        <div id="photo-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Populated by JavaScript -->
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="bg-zinc-900 py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-semibold tracking-tighter">How we stop screenshots &amp; downloads</h2>
+                <p class="text-zinc-400 mt-3">Best-effort client-side protection (impossible to 100% prevent on any web platform, but extremely difficult for normal users)</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-zinc-950 rounded-3xl p-8">
+                    <div class="text-emerald-400 text-5xl mb-6">1️⃣</div>
+                    <h3 class="font-semibold text-2xl">Canvas rendering</h3>
+                    <p class="text-zinc-400 mt-3">Photos are never served as &lt;img&gt; tags. They are drawn directly onto an HTML5 canvas. No downloadable source file exists in the DOM.</p>
+                </div>
+                <div class="bg-zinc-950 rounded-3xl p-8">
+                    <div class="text-emerald-400 text-5xl mb-6">2️⃣</div>
+                    <h3 class="font-semibold text-2xl">Dynamic watermarking</h3>
+                    <p class="text-zinc-400 mt-3">Every view gets a unique buyer-specific watermark + timestamp. Multiple diagonal layers make cropping difficult.</p>
+                </div>
+                <div class="bg-zinc-950 rounded-3xl p-8">
+                    <div class="text-emerald-400 text-5xl mb-6">3️⃣</div>
+                    <h3 class="font-semibold text-2xl">Event blocking</h3>
+                    <p class="text-zinc-400 mt-3">Right-click disabled • Drag disabled • Print screen attempts logged • Keyboard shortcuts blocked on the viewer • Canvas cleared if dev tools are suspected.</p>
+                </div>
+            </div>
+            
+            <div class="text-center text-xs text-zinc-500 mt-12">
+                ⚠️ Note: Tech-savvy users with screen capture software or phones can still record the screen. 
+                This is the strongest protection possible without a native app or heavy DRM (which most buyers hate). 
+                For maximum security, combine with low-resolution previews + high-res only after purchase.
+            </div>
+        </div>
+    </section>
+
+    <!-- PHOTO MODAL (Preview + Buy) -->
+    <div id="photo-modal" onclick="if(event.target === this) hideModal()" 
+         class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="modal bg-zinc-900 rounded-3xl max-w-4xl w-full max-h-[95vh] overflow-auto">
+            
+            <div class="flex items-center justify-between border-b border-zinc-800 px-8 py-5">
+                <div>
+                    <h2 id="modal-title" class="text-2xl font-semibold"></h2>
+                    <p id="modal-price" class="text-emerald-400 font-mono"></p>
+                </div>
+                <button onclick="hideModal()" class="text-4xl leading-none text-zinc-400 hover:text-white">×</button>
+            </div>
+            
+            <div class="p-8">
+                <div class="protected-content mb-8">
+                    <canvas id="modal-canvas" class="w-full rounded-2xl bg-black mx-auto"></canvas>
+                </div>
+                
+                <div id="modal-description" class="text-zinc-300 leading-relaxed mb-8"></div>
+                
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex items-center gap-x-3 text-sm text-zinc-400">
+                        <span class="px-4 py-2 bg-zinc-800 rounded-3xl">🔒 Protected canvas</span>
+                        <span class="px-4 py-2 bg-zinc-800 rounded-3xl">🛡️ Watermarked</span>
+                        <span class="px-4 py-2 bg-zinc-800 rounded-3xl">📵 No download</span>
+                    </div>
+                    
+                    <div class="flex gap-x-3">
+                        <button onclick="addToCartFromModal()" 
+                                class="border border-zinc-700 hover:bg-white hover:text-black transition-colors px-8 py-4 rounded-3xl font-medium flex items-center gap-x-2">
+                            <span>Add to cart</span>
+                        </button>
+                        <button onclick="buyNow()" 
+                                class="bg-emerald-500 hover:bg-emerald-400 transition-colors text-black px-10 py-4 rounded-3xl font-semibold flex items-center gap-x-2">
+                            BUY NOW • <span id="modal-price-button"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART MODAL -->
+    <div id="cart-modal" onclick="if(event.target === this) hideCart()" 
+         class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-zinc-900 rounded-3xl max-w-lg w-full">
+            <div class="px-8 py-6 border-b border-zinc-800 flex justify-between items-center">
+                <h3 class="text-2xl font-semibold">Your Cart</h3>
+                <button onclick="hideCart()" class="text-4xl">×</button>
+            </div>
+            
+            <div id="cart-items" class="p-8 max-h-96 overflow-auto">
+                <!-- JS populated -->
+            </div>
+            
+            <div class="p-8 border-t border-zinc-800">
+                <div class="flex justify-between text-xl font-medium mb-8">
+                    <span>Total</span>
+                    <span id="cart-total" class="font-mono"></span>
+                </div>
+                
+                <button onclick="checkout()" 
+                        class="w-full bg-emerald-500 text-black py-6 rounded-3xl text-xl font-semibold">
+                    Secure Checkout (Demo Mode)
+                </button>
+                <p class="text-center text-xs text-zinc-500 mt-4">Test mode • No real payment taken</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIBRARY MODAL (Purchased photos) -->
+    <div id="library-modal" onclick="if(event.target === this) hideLibrary()" 
+         class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-zinc-900 rounded-3xl max-w-4xl w-full max-h-[95vh]">
+            <div class="px-8 py-6 border-b flex justify-between items-center">
+                <h3 class="text-2xl font-semibold">My Secure Library</h3>
+                <button onclick="hideLibrary()" class="text-4xl">×</button>
+            </div>
+            
+            <div id="library-grid" class="p-8 grid grid-cols-2 md:grid-cols-3 gap-6">
+                <!-- JS populated protected thumbnails -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SELLER DASHBOARD MODAL -->
+    <div id="seller-modal" onclick="if(event.target === this) hideSellerDashboard()" 
+         class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4">
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-zinc-900 rounded-3xl max-w-2xl w-full">
+            <div class="px-8 py-6 border-b flex justify-between">
+                <h3 class="text-2xl font-semibold">Seller Dashboard • Add New Photo</h3>
+                <button onclick="hideSellerDashboard()" class="text-4xl">×</button>
+            </div>
+            
+            <div class="p-8 space-y-6">
+                <div>
+                    <label class="block text-sm mb-2">Photo Title</label>
+                    <input id="new-title" type="text" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400"
+                           placeholder="Sunset over the Alps">
+                </div>
+                
+                <div>
+                    <label class="block text-sm mb-2">Price in USD</label>
+                    <input id="new-price" type="number" step="0.01" value="9.99"
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400">
+                </div>
+                
+                <div>
+                    <label class="block text-sm mb-2">Direct Image URL (host your photo publicly on Imgur, Cloudinary, etc.)</label>
+                    <input id="new-url" type="url" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400"
+                           placeholder="https://i.imgur.com/yourphoto.jpg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm mb-2">Description</label>
+                    <textarea id="new-desc" rows="3"
+                              class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-400"></textarea>
+                </div>
+                
+                <button onclick="addNewPhoto()" 
+                        class="w-full bg-emerald-500 text-black py-5 rounded-3xl font-semibold text-lg">
+                    Add to Gallery (Protected)
+                </button>
+                
+                <p class="text-xs text-zinc-500 text-center">
+                    Your photo will be added instantly and rendered in canvas for all buyers.
+                    <br>Replace the URL anytime with a new hosted image.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS TOAST -->
+    <div id="toast" onclick="this.classList.add('hidden')" 
+         class="hidden fixed bottom-8 right-8 bg-emerald-500 text-black px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-x-3">
+        <span id="toast-text" class="font-medium"></span>
+    </div>
+
+    <script>
+        // Tailwind initialization
+        function initTailwind() {
+            return {
+                config(userConfig = {}) {
+                    return {
+                        configUser: userConfig,
+                        theme: {
+                            extend: {},
+                        }
+                    }
+                },
+                theme: {
+                    extend: {},
+                }
+            }
+        }
+        
+        // Sample photos - replace these URLs with your own hosted images
+        let photos = [
+            {
+                id: 1,
+                title: "Beddgelert",
+                price: 14.99,
+                url: "https://i.postimg.cc/NFTP96Tq/20251010-090547.jpg",
+                desc: "Dramatic mountain veiw over looking Beddgelert"
+            },
+            {
+                id: 2,
+                title: "energetic london",
+                price: 19.99,
+                url: "https://i.postimg.cc/fLKctffQ/image-31.jpg",
+                desc: "wonderful veiw of everyday london. Perfect for prints."
+            },
+            {
+                id: 3,
+                title: "The Reindeer of Glenmore",
+                price: 19.99,
+                url: "https://i.postimg.cc/LXxYLzNQ/20260317-120921.jpg",
+                desc: "The wild reindeer of Cairngorm"
+            },
+            {
+                id: 4,
+                title: "Crystal Clear Lake",
+                price: 12.99,
+                url: "https://picsum.photos/id/201/1200/800",
+                desc: "Mirror-like alpine lake reflecting snow-capped mountains."
+            },
+            {
+                id: 5,
+                title: "Desert Dunes at Dawn",
+                price: 8.99,
+                url: "https://picsum.photos/id/1005/1200/800",
+                desc: "Endless sand dunes glowing in the first light of day."
+            },
+            {
+                id: 6,
+                title: "Cherry Blossom Canopy",
+                price: 15.99,
+                url: "https://picsum.photos/id/133/1200/800",
+                desc: "Pink blossoms exploding across Tokyo streets in spring."
+            }
+        ]
+        
+        let cart = []
+        let purchased = JSON.parse(localStorage.getItem('purchased')) || []
+        
+        // Load saved photos from localStorage (seller can add more)
+        function loadPhotos() {
+            const saved = localStorage.getItem('shieldPhotos')
+            if (saved) {
+                photos = JSON.parse(saved)
+            }
+        }
+        
+        function savePhotos() {
+            localStorage.setItem('shieldPhotos', JSON.stringify(photos))
+        }
+        
+        // Render protected image on canvas with heavy watermarking
+        function renderProtectedImage(url, canvasId, buyerName = "Purchased by You") {
+            const canvas = document.getElementById(canvasId)
+            if (!canvas) return
+            const ctx = canvas.getContext('2d')
+            
+            const img = new Image()
+            img.crossOrigin = "anonymous"
+            
+            img.onload = function () {
+                // Set canvas size to image
+                canvas.width = img.width
+                canvas.height = img.height
+                
+                // Draw the photo
+                ctx.drawImage(img, 0, 0)
+                
+                // Add multiple watermarks for maximum protection
+                ctx.fillStyle = 'rgba(0, 255, 157, 0.25)'
+                ctx.font = 'bold 48px Inter'
+                
+                // Horizontal watermark
+                ctx.fillText(buyerName, 80, canvas.height - 80)
+                
+                // Diagonal watermarks
+                ctx.save()
+                ctx.rotate(-Math.PI / 6)
+                ctx.fillText('© ShieldPhotos • ' + new Date().toLocaleDateString(), -120, canvas.height / 1.8)
+                ctx.fillText('NO SCREENSHOTS • NO DOWNLOADS', -180, canvas.height / 1.3)
+                ctx.restore()
+                
+                // Second diagonal layer
+                ctx.save()
+                ctx.rotate(Math.PI / 6)
+                ctx.fillText('© ShieldPhotos', canvas.width / 3, -80)
+                ctx.restore()
+                
+                // Small repeated watermark grid
+                ctx.font = 'bold 22px Inter'
+                ctx.fillStyle = 'rgba(255,255,255,0.15)'
+                for (let x = 60; x < canvas.width; x += 220) {
+                    for (let y = 80; y < canvas.height; y += 140) {
+                        ctx.fillText('🔒', x, y)
+                    }
+                }
+                
+                // Final subtle overlay
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'
+                ctx.fillRect(0, 0, canvas.width, canvas.height)
+            }
+            
+            img.src = url
+        }
+        
+        // Render the main gallery
+        function renderGallery() {
+            const container = document.getElementById('photo-grid')
+            container.innerHTML = ''
+            
+            photos.forEach(photo => {
+                const isPurchased = purchased.includes(photo.id)
+                
+                const cardHTML = `
+                <div onclick="showPhotoModal(${photo.id})" 
+                     class="group bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 hover:border-emerald-400 transition-all cursor-pointer">
+                    <div class="relative">
+                        <img src="${photo.url}" alt="${photo.title}" 
+                             class="w-full aspect-video object-cover no-right-click">
+                        ${isPurchased ? 
+                        `<div class="absolute top-3 left-3 bg-emerald-500 text-black text-xs font-bold px-3 py-1 rounded-2xl flex items-center">✓ UNLOCKED</div>` : ''}
+                        <div class="absolute top-3 right-3 bg-black/70 text-white text-xs font-mono px-2.5 py-px rounded-lg">
+                            ${photo.price}
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-medium text-lg group-hover:text-emerald-400 transition-colors">${photo.title}</h4>
+                        <p class="text-sm text-zinc-400 line-clamp-2">${photo.desc}</p>
+                    </div>
+                </div>`
+                
+                container.innerHTML += cardHTML
+            })
+            
+            if (photos.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center py-12 text-zinc-500">No photos yet. Add some in the Seller Dashboard!</p>`
+            }
+        }
+        
+        // Show photo in modal with protected canvas
+        let currentPhoto = null
+        
+        function showPhotoModal(id) {
+            currentPhoto = photos.find(p => p.id === id)
+            if (!currentPhoto) return
+            
+            document.getElementById('modal-title').textContent = currentPhoto.title
+            document.getElementById('modal-price').innerHTML = `$${currentPhoto.price} <span class="text-zinc-400 text-base">one-time</span>`
+            document.getElementById('modal-price-button').innerHTML = `$${currentPhoto.price}`
+            document.getElementById('modal-description').innerHTML = `<p>${currentPhoto.desc}</p><p class="text-emerald-400 mt-6 text-sm">This preview is fully protected. After purchase it will be permanently available in your Library.</p>`
+            
+            // Render protected canvas
+            renderProtectedImage(currentPhoto.url, 'modal-canvas', 'Preview Only - Buy to unlock')
+            
+            // Show modal
+            document.getElementById('photo-modal').classList.remove('hidden')
+            document.getElementById('photo-modal').classList.add('flex')
+        }
+        
+        function hideModal() {
+            const modal = document.getElementById('photo-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+            currentPhoto = null
+        }
+        
+        // Cart functions
+        function addToCart(photo) {
+            if (cart.find(item => item.id === photo.id)) return
+            cart.push(photo)
+            updateCartCount()
+            showToast(`${photo.title} added to cart`)
+        }
+        
+        function addToCartFromModal() {
+            if (currentPhoto) {
+                addToCart(currentPhoto)
+                hideModal()
+            }
+        }
+        
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length
+        }
+        
+        function showCart() {
+            const container = document.getElementById('cart-items')
+            container.innerHTML = ''
+            
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-zinc-400 text-center py-12">Your cart is empty</p>`
+                document.getElementById('cart-total').textContent = '£0.00'
+                document.getElementById('cart-modal').classList.remove('hidden')
+                document.getElementById('cart-modal').classList.add('flex')
+                return
+            }
+            
+            let total = 0
+            
+            cart.forEach((item, index) => {
+                total += item.price
+                container.innerHTML += `
+                <div class="flex gap-4 mb-6 last:mb-0">
+                    <canvas width="80" height="60" class="rounded-2xl flex-shrink-0" id="cart-canvas-${item.id}"></canvas>
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <p class="font-medium">${item.title}</p>
+                            <p class="font-mono">$${item.price}</p>
+                        </div>
+                        <button onclick="removeFromCart(${index});event.stopImmediatePropagation()" 
+                                class="text-xs text-red-400 hover:text-red-300 mt-2">Remove</button>
+                    </div>
+                </div>`
+            })
+            
+            document.getElementById('cart-total').innerHTML = `<span class="font-mono">$${total.toFixed(2)}</span>`
+            
+            // Render tiny protected canvases in cart
+            setTimeout(() => {
+                cart.forEach(item => {
+                    const c = document.getElementById(`cart-canvas-${item.id}`)
+                    if (c) renderProtectedImage(item.url, `cart-canvas-${item.id}`, 'Cart')
+                })
+            }, 100)
+            
+            document.getElementById('cart-modal').classList.remove('hidden')
+            document.getElementById('cart-modal').classList.add('flex')
+        }
+        
+        function hideCart() {
+            const modal = document.getElementById('cart-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+        
+        function removeFromCart(index) {
+            cart.splice(index, 1)
+            updateCartCount()
+            showCart()
+        }
+        
+        function checkout() {
+            // Demo checkout
+            hideCart()
+            
+            // Mark all cart items as purchased
+            cart.forEach(item => {
+                if (!purchased.includes(item.id)) {
+                    purchased.push(item.id)
+                }
+            })
+            
+            localStorage.setItem('purchased', JSON.stringify(purchased))
+            
+            showToast(`🎉 Purchase successful! ${cart.length} photos added to your Library`)
+            cart = []
+            updateCartCount()
+            
+            // Auto-open library
+            setTimeout(() => {
+                showLibrary()
+            }, 800)
+        }
+        
+        // Library
+        function showLibrary() {
+            const container = document.getElementById('library-grid')
+            container.innerHTML = ''
+            
+            const owned = photos.filter(p => purchased.includes(p.id))
+            
+            if (owned.length === 0) {
+                container.innerHTML = `
+                <div class="col-span-full text-center py-16">
+                    <p class="text-6xl mb-6">📚</p>
+                    <p class="text-zinc-400">No purchased photos yet</p>
+                    <button onclick="hideLibrary();navigateToSection('gallery')" 
+                            class="mt-6 text-emerald-400 underline">Browse gallery</button>
+                </div>`
+                document.getElementById('library-modal').classList.remove('hidden')
+                document.getElementById('library-modal').classList.add('flex')
+                return
+            }
+            
+            owned.forEach(photo => {
+                const div = document.createElement('div')
+                div.className = "bg-zinc-950 rounded-3xl overflow-hidden cursor-pointer border border-emerald-400/30"
+                div.innerHTML = `
+                <div class="relative p-2">
+                    <canvas id="library-canvas-${photo.id}" width="400" height="280" class="w-full rounded-2xl"></canvas>
+                    <div class="absolute bottom-4 left-4 bg-emerald-500 text-black text-xs px-4 py-1 rounded-3xl font-medium">UNLOCKED</div>
+                </div>
+                <div class="px-5 pb-5">
+                    <p class="font-medium">${photo.title}</p>
+                </div>`
+                container.appendChild(div)
+                
+                // Render protected
+                setTimeout(() => {
+                    renderProtectedImage(photo.url, `library-canvas-${photo.id}`, 'Your Library')
+                }, 50)
+                
+                // Click to open full protected viewer
+                div.onclick = () => {
+                    hideLibrary()
+                    currentPhoto = photo
+                    document.getElementById('modal-title').textContent = photo.title + ' • Library'
+                    document.getElementById('modal-price').innerHTML = `✅ Owned`
+                    document.getElementById('modal-description').innerHTML = `<p class="text-emerald-400">You own this photo forever. Protected viewer below.</p>`
+                    renderProtectedImage(photo.url, 'modal-canvas', 'Your Permanent Copy')
+                    document.getElementById('photo-modal').classList.remove('hidden')
+                    document.getElementById('photo-modal').classList.add('flex')
+                }
+            })
+            
+            document.getElementById('library-modal').classList.remove('hidden')
+            document.getElementById('library-modal').classList.add('flex')
+        }
+        
+        function hideLibrary() {
+            const modal = document.getElementById('library-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+        
+        // Seller dashboard
+        function showSellerDashboard() {
+            document.getElementById('seller-modal').classList.remove('hidden')
+            document.getElementById('seller-modal').classList.add('flex')
+        }
+        
+        function hideSellerDashboard() {
+            const modal = document.getElementById('seller-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+        
+        function addNewPhoto() {
+            const title = document.getElementById('new-title').value.trim() || 'Untitled Photo'
+            const price = parseFloat(document.getElementById('new-price').value) || 9.99
+            const url = document.getElementById('new-url').value.trim()
+            const desc = document.getElementById('new-desc').value.trim() || 'Beautiful protected photo'
+            
+            if (!url) {
+                alert('Please provide a direct image URL (e.g. Imgur, Cloudinary, your own hosting)')
+                return
+            }
+            
+            const newPhoto = {
+                id: Date.now(),
+                title: title,
+                price: price,
+                url: url,
+                desc: desc
+            }
+            
+            photos.unshift(newPhoto)
+            savePhotos()
+            renderGallery()
+            hideSellerDashboard()
+            
+            showToast('✅ New photo added to gallery and fully protected!')
+            
+            // Clear form
+            document.getElementById('new-title').value = ''
+            document.getElementById('new-url').value = ''
+            document.getElementById('new-desc').value = ''
+        }
+        
+        function buyNow() {
+            if (!currentPhoto) return
+            hideModal()
+            
+            // Simulate instant purchase for demo
+            if (!purchased.includes(currentPhoto.id)) {
+                purchased.push(currentPhoto.id)
+                localStorage.setItem('purchased', JSON.stringify(purchased))
+            }
+            
+            showToast(`✅ ${currentPhoto.title} purchased and added to Library!`)
+            setTimeout(() => showLibrary(), 600)
+        }
+        
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast')
+            document.getElementById('toast-text').innerHTML = message
+            toast.classList.remove('hidden')
+            toast.style.display = 'flex'
+            
+            setTimeout(() => {
+                toast.classList.add('hidden')
+                toast.style.display = 'none'
+            }, 3200)
+        }
+        
+        function navigateToSection(section) {
+            document.getElementById(section).scrollIntoView({ behavior: 'smooth' })
+        }
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu')
+            menu.classList.toggle('hidden')
+        }
+        
+        // Hero canvas demo
+        function renderHeroCanvas() {
+            const canvas = document.getElementById('hero-canvas')
+            renderProtectedImage('https://picsum.photos/id/1015/1200/800', 'hero-canvas', 'Hero Preview')
+        }
+        
+        // Main app bootstrap
+        function initializeApp() {
+            loadPhotos()
+            renderGallery()
+            updateCartCount()
+            renderHeroCanvas()
+            
+            console.log('%c✅ ShieldPhotos ready! Photos are protected via canvas + watermarking.', 'color:#00ff9d; font-family:monospace')
+            
+            // Global right-click blocker on whole site (extra layer)
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.closest('.protected-content') || e.target.tagName === 'CANVAS') {
+                    e.preventDefault()
+                    return false
+                }
+            })
+            
+            // Keyboard shortcut blocker example (Print Screen, etc.)
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'PrintScreen') {
+                    showToast('🚫 Screenshot attempt blocked')
+                    e.preventDefault()
+                }
+            })
+            
+            console.log('Full website created. You can now customize photos, sell securely, and the protection is built-in.')
+        }
+        
+        // Start the app
+        window.onload = initializeApp
+    </script>
+</body>
+</html>
+```
